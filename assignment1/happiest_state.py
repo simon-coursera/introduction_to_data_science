@@ -1,7 +1,7 @@
 import sys
 import json
 import re
-
+from operator import itemgetter
 
 US_STATES = ('AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN'
             ,'IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT'
@@ -62,31 +62,26 @@ def main():
         af_scores[term] = int(score)  # Convert the score to an integer.
 
     state_scores = {}
-    
+
     with open(sys.argv[2]) as f:
         for line in f:
             tweet = json.loads(line)
-            _content = tweet.get('text', '')           
+            _content = tweet.get('text', '')
             if _content:
-                _lang = tweet.get('lang', '')
-                if _lang == u"en":
-                    _state = get_tweet_state(tweet)                    
-                    if _state:
+                _state = get_tweet_state(tweet)                    
+                if _state:
                         #print(_state)
-                        _score = sentiment(_content, state_scores, af_scores)
-                        if not state_scores.has_key(_state):
-                            state_scores[_state] = _score
-                        else:
-                            state_scores[_state] += _score
-    winer_state = ""
-    winer_score = -1000000
-    for (_state, _score) in state_scores.iteritems():
-        #print _state, _score
-        if _score > winer_score:
-            winer_score = _score
-            winer_state = _state
-    
-    print winer_state
+                    _score = sentiment(_content, state_scores, af_scores)
+                    if not state_scores.has_key(_state):
+                        state_scores[_state] = _score
+                    else:
+                        state_scores[_state] += _score
+  
+    sorted_states = sorted(state_scores.iteritems(), key=itemgetter(1), reverse=True)
+
+    print(sorted_states[0][0])
+    #for _state in sorted_states:
+    #    print(_state[0], _state[1])
 
 if __name__ == '__main__':
     main()
